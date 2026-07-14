@@ -155,6 +155,11 @@ App::generateServerConfig () {
 		[[ $BOT_QUOTA ]] && echo "bot_quota \"$BOT_QUOTA\""
 		[[ $TV_DELAY ]] && echo "tv_delay \"$TV_DELAY\""
 
+		# Every preset's own gamemode_*.cfg sets its own warmup length - override it
+		# here, after that file has already loaded, so it actually sticks
+		echo "mp_warmuptime \"${MP_WARMUPTIME:-0}\""
+		echo "mp_warmup_pausetimer \"${MP_WARMUP_PAUSETIMER:-0}\""
+
 		# Additional commands, may be set through the gamemode script
 		for item in "${GAMEMODE_CUSTOM[@]}"; do
 			echo "$item"
