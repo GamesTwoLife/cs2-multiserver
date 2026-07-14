@@ -38,17 +38,35 @@ $(printf "\x1b[36m%s\x1b[m"   "**INSTANCE SELECTION:**")
     \$DEFAULT_INSTANCE in your config file.
 
 $(printf "\x1b[36m%s\x1b[m"   "**INSTANCE-SPECIFIC COMMANDS:**")
-    create   > Create a new server instance
+    create   > Create a new server instance (auto-assigns a free PORT, installs
+             > plugins immediately)
+    clone <newname>
+             > Create <newname> as a copy of this instance's config, with a
+             > freshly assigned, non-colliding PORT
     start | stop | restart
              > Start/Stop/Restart given server instance (using tmux)
     status   > Check whether the server is currently running
     console  > Attach (connect) to the server's console. While inside, press
              > CTRL-D to detach (return to outside) without killing the server
+    fix-exec-stack
+             > Re-apply the executable-stack fix (see README) to every .so under
+             > this instance's addons/ - useful after adding a plugin by hand
+             > without a full restart
 
 $(printf "\x1b[36m%s\x1b[m"   "**ADMINISTRATION COMMANDS:** working on the base installation")
     setup    > Configure this program and install dependencies
-    update   > Install/Update the game server
+    update   > Install/Update the game server (also offers to update plugin pins)
     validate > Repair broken/missing game files
+
+    addons               > List available addons and whether they are enabled
+    enable-addon <name>  > Enable an addon (e.g. SourcemodHelper for Metamod/CounterStrikeSharp)
+    disable-addon <name> > Disable an addon
+
+    list-instances     > List all instances owned by the current user
+    start-all          > Start every instance (e.g. after a reboot)
+    stop-all           > Stop every instance
+    restart-all        > Restart every instance (e.g. after cs2-server update)
+    install-automation > Set up boot auto-start (systemd) + daily auto-update at 6 AM (cron)
 
 Commands will be executed in the order they are given. If a command fails,
 subsequent commands will not be executed.
