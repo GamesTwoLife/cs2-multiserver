@@ -12,7 +12,11 @@
 Core.Instance::registerCommands () {
 	simpleCommand "Core.Instance::create" create create-instance
 	simpleCommand "Core.Instance::listInstances" list-instances
+	simpleCommand "Core.Instance::startAll" start-all
+	simpleCommand "Core.Instance::stopAll" stop-all
+	simpleCommand "Core.Instance::restartAll" restart-all
 	oneArgCommand "Core.Instance::importFrom" import-from
+	oneArgCommand "Core.Instance::cloneInstance" clone
 }
 
 
@@ -123,6 +127,25 @@ Core.Instance::listInstances () (
 		}
 	done
 )
+
+
+# Runs $1 (a Core.Server:: request function) against every instance the current
+# user owns (not the base installation). Intended for boot-time automation
+# (systemd) or after a scripted `cs2-server update` (cron). Each instance runs
+# in its own subshell so one failure doesn't abort the rest.
+Core.Instance::forEachInstance () {
+	requireConfig || return
+	local list="$(Core.Instance::listInstances)"
+	[[ $list ]] || { info <<< "No instances found."; return; }
+	local inst
+	for inst in $list; do
+		( INSTANCE=$inst; Core.Instance::select; "$1"; )
+	done
+}
+
+Core.Instance::startAll ()   { Core.Instance::forEachInstance Core.Server::requestStart; }
+Core.Instance::stopAll ()    { Core.Instance::forEachInstance Core.Server::requestStop; }
+Core.Instance::restartAll () { Core.Instance::forEachInstance Core.Server::requestRestart; }
 
 
 
@@ -249,6 +272,17 @@ Core.Instance::create () (
 	# Save the APP of this instance directory
 	echo $APP > "msm.d/app"
 
+	# Auto-assign a port that doesn't collide with any existing instance
+	# (GOTV's port follows automatically, it's always PORT+5 - see cs2/app/cfg/gotv.conf)
+	try App::assignInstancePort
+
+	# Skipped when called from ::cloneInstance, which reassigns the port
+	# afterwards and opens the firewall for the final one itself
+	[[ $MSM_SKIP_FIREWALL ]] || try App::allowFirewallPorts
+
+	log <<< "Installing plugins (Metamod/CounterStrikeSharp/...) if configured ..."
+	::hookable Core.Instance::afterCreate
+
 	success <<-EOF
 		Instance created successfully!
 
@@ -256,6 +290,45 @@ Core.Instance::create () (
 		in **$INSTCFGDIR**, to set IP, port,
 		passwords and other game settings of your instance.
 	EOF
+)
+
+
+# Creates a new instance ($1) as a copy of the currently selected one, with its
+# own config (server.conf/gotv.conf overlaid from the source) and a freshly
+# assigned, non-colliding port.
+Core.Instance::cloneInstance () (
+	[[ $1 ]] || error <<< "Usage: **$THIS_COMMAND @source clone <newname>**" || return
+	requireConfig || return
+	Core.Instance::isInstance || error <<-EOF || return
+		**$INSTANCE_TEXT** is not a valid instance - nothing to clone.
+	EOF
+
+	local SRC_INSTANCE="$INSTANCE"
+	local SRC_CFGDIR="$INSTCFGDIR"
+	local NEWNAME="$1"
+
+	[[ $NEWNAME != $SRC_INSTANCE ]] || error <<< "Source and target instance name must differ!" || return
+
+	log <<< ""
+	info <<< "Cloning **@$SRC_INSTANCE** to **@$NEWNAME** ..."
+
+	INSTANCE="$NEWNAME"
+	Core.Instance::select
+	Core.Instance::isInstance && error <<< "Instance **@$NEWNAME** already exists!" && return
+
+	MSM_SKIP_FIREWALL=1 Core.Instance::create || return
+
+	# Overlay the source instance's own config (presets, passwords, etc.) on
+	# top of the fresh template that ::create just laid down
+	cp -rf "$SRC_CFGDIR"/. "$INSTCFGDIR/" 2>/dev/null
+
+	# The copied config still has the source's port - reassign a fresh one
+	# and open the firewall for THAT one (not the throwaway one ::create
+	# assigned before we overwrote its config above)
+	try App::assignInstancePort
+	try App::allowFirewallPorts
+
+	success <<< "Cloned **@$SRC_INSTANCE** to **@$NEWNAME**. Review **$INSTCFGDIR/server.conf** before starting it."
 )
 
 
