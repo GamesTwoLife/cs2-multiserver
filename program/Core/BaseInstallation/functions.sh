@@ -153,14 +153,18 @@ Core.BaseInstallation::requestUpdate () {
 
 	log <<< "Checking for updates ..."
 
-	Core.BaseInstallation::isUpToDate && {
+	if Core.BaseInstallation::isUpToDate; then
 		info <<< "The base installation is already up to date."
-		return
-	}
+	else
+		info <<< "The base installation needs to be updated!"
+		ACTION="update" Core.BaseInstallation::startUpdate || return
+	fi
 
-	info <<< "The base installation needs to be updated!"
-
-	ACTION="update" Core.BaseInstallation::startUpdate
+	# Extension point for addons (e.g. SourcemodHelper) to check for their own
+	# updates (e.g. newer Metamod/CounterStrikeSharp builds), regardless of
+	# whether the game itself needed an update today. No-op if nothing is
+	# registered.
+	::hookable Core.BaseInstallation::afterUpdate
 }
 
 
