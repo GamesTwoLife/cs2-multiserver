@@ -125,9 +125,10 @@ App::generateServerConfig () {
 	(	disclaimer
 		cat <<-EOF
 			// Without a mapgroup, the engine has no rotation to fall back to once a
-			// match ends - explicitly pin the next map to the one we're already on,
-			// and skip the map vote, so the server restarts on the same map instead
-			// of getting stuck with no map loaded.
+			// match ends - restart the match on the current map instead of loading a
+			// new one, pin nextlevel as a fallback for other map-change triggers, and
+			// skip the map vote, so the server never gets stuck with no map loaded.
+			mp_match_end_restart 1
 			nextlevel "$MAP"
 			mp_endmatch_votenextmap 0
 
