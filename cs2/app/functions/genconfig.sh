@@ -79,6 +79,8 @@ App::generateServerConfig () {
 
 			sv_cheats "$SV_CHEATS"
 			sv_hibernate_when_empty "${SV_HIBERNATE_WHEN_EMPTY:-0}"
+			mp_autokick "${MP_AUTOKICK:-0}"
+			sv_kick_players_with_cooldown "${SV_KICK_PLAYERS_WITH_COOLDOWN:-0}"
 
 			exec banned_user.cfg // Read list of banned users
 		EOF
