@@ -2,6 +2,6 @@
 ## vim: noet:sw=0:sts=0:ts=4
 
 local ADDON_NAME="Sourcemod Helper"
-local ADDON_DESCRIPTION="This addon helps downloading and configuring MetaMod:Source, Sourcemod, plugins and extensions for each instance."
+local ADDON_DESCRIPTION="This addon downloads and configures Metamod:Source, CounterStrikeSharp and/or SourceMod (plugins and extensions) for each instance. Metamod and CounterStrikeSharp are installed by default; SourceMod is opt-in via SM_SOURCEMOD=1."
 local ADDON_WEBSITE="https://github.com/dasisdormax/cs2-multiserver"
 local ADDON_AUTHOR="Maximilian '//chilly™//' Wende <dasisdormax@mailbox.org>"

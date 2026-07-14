@@ -24,6 +24,23 @@ SourcemodHelper::unpackZip () {
 	[[ -r $zipfile ]] && unzip -q "$zipfile"
 }
 
+# Like unpackZip, but for archives that wrap everything in a single top-level
+# directory (e.g. "toolname-linux-v1.2.3/addons/...") instead of extracting
+# "addons/..." directly at the archive root.
+SourcemodHelper::unpackZipStripTop () {
+	local zipfile="$(SourcemodHelper::downloadFile "$@")"
+	[[ -r $zipfile ]] || return 1
+	local tmpdir="$(mktemp -d)"
+	unzip -q "$zipfile" -d "$tmpdir" || { rm -rf "$tmpdir"; return 1; }
+	local entries=("$tmpdir"/*)
+	if [[ ${#entries[@]} -eq 1 && -d ${entries[0]} ]]; then
+		cp -r "${entries[0]}"/. .
+	else
+		cp -r "$tmpdir"/. .
+	fi
+	rm -rf "$tmpdir"
+}
+
 SourcemodHelper::unpackTar () {
 	local tarfile="$(SourcemodHelper::downloadFile "$@")"
 	[[ -r $tarfile ]] && tar xzf "$tarfile"

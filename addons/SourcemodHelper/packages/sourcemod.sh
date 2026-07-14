@@ -3,6 +3,6 @@
 
 SourcemodPackage.sourcemod::download () {
 	SourcemodHelper::unpackTar \
-		https://sm.alliedmods.net/smdrop/1.11/sourcemod-1.11.0-git6924-linux.tar.gz \
-		6936ef212c43d612d8b796774aa68b98a987c705e280bcfc1cc15bef467e7bd8
+		https://github.com/alliedmodders/sourcemod/releases/download/1.12.0.7245/sourcemod-1.12.0-git7245-linux.tar.gz \
+		151a24bec2c6ffccc81a453e95d8b09d15e5b7fab3f61412327d1d17e3d734dd
 }
