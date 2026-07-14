@@ -1,0 +1,29 @@
+# Starts every cs2-multiserver instance on boot, and stops them cleanly on
+# `systemctl stop` / shutdown. The actual game servers keep running inside their
+# own tmux sessions - this unit only fires `start-all`/`stop-all` and exits
+# (Type=oneshot + RemainAfterExit=yes), it does not supervise the game processes.
+#
+# Install:
+#   1. Copy this file to /etc/systemd/system/cs2-multiserver.service
+#   2. Replace <USER> and the two /home/<USER>/... paths below with your actual
+#      values (the user that owns ~/msm.d and the cs2-multiserver checkout)
+#   3. sudo systemctl daemon-reload
+#   4. sudo systemctl enable --now cs2-multiserver
+
+[Unit]
+Description=CS2 Multi Server Manager - start all instances
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=<USER>
+WorkingDirectory=/home/<USER>
+ExecStart=/home/<USER>/cs2-multiserver/msm start-all
+ExecStop=/home/<USER>/cs2-multiserver/msm stop-all
+TimeoutStartSec=600
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target
