@@ -77,8 +77,8 @@ App::generateServerConfig () {
 			// prevents loading of a player's inventory
 			sv_lan 0
 
-			sv_pure "$SV_PURE"
 			sv_cheats "$SV_CHEATS"
+			sv_hibernate_when_empty "${SV_HIBERNATE_WHEN_EMPTY:-0}"
 
 			exec banned_user.cfg // Read list of banned users
 		EOF
@@ -107,8 +107,6 @@ App::generateServerConfig () {
 
 			tv_delaymapchange 1
 			tv_deltacache 2
-
-			mapoverview_allow_client_draw 1
 		EOF
 		else
 			TV_ENABLE=

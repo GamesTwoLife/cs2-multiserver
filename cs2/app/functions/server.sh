@@ -96,7 +96,6 @@ App::buildLaunchCommand () {
 		)
 	else
 		LAUNCH_ARGS+=(
-			+mapgroup $MAPGROUP
 			+map $MAP
 		)
 	fi

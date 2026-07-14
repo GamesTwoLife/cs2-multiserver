@@ -223,5 +223,25 @@ App::performUpdate () (
 
 	# App::applyInstancePermissions
 
+	(( code )) || App::fixMissingEngineLibs
+
 	return $code
 )
+
+
+# Some CS2 builds only ship libv8*.so under game/bin/linuxsteamrt64/, but
+# game/csgo/bin/linuxsteamrt64/libserver.so needs it right next to itself to
+# dlopen. Symlinking it into the base install fixes it for every instance at
+# once, since they share game/csgo/bin via Core.Instance::symlinkFiles.
+App::fixMissingEngineLibs () {
+	local src="$INSTALL_DIR/game/bin/linuxsteamrt64"
+	local dst="$INSTALL_DIR/game/csgo/bin/linuxsteamrt64"
+	[[ -d $src && -d $dst ]] || return 0
+
+	local f name
+	for f in "$src"/libv8*; do
+		[[ -e $f ]] || continue
+		name="$(basename "$f")"
+		[[ -e "$dst/$name" ]] || ln -sf "$f" "$dst/$name"
+	done
+} 2>/dev/null
