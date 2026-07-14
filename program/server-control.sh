@@ -123,13 +123,16 @@ while [[ $STATE != "STOPPED" ]]; do
 			if [[ $errno ]]; then
 				info <<< "Server exited with exit code $errno."
 
-				if (( $errno )); then
-					log <<< "Relaunching server due to a crash ..."
-					STATE="LAUNCHING"
-				elif Core.Wrapper::isUpdating; then
+				# We only get here if a stop was NOT explicitly requested via
+				# 'cs2-server stop' (that case already 'continue'd above). So any
+				# exit - a crash (errno != 0) or someone typing 'quit' in the game
+				# console (errno == 0) - gets relaunched. The only way to actually
+				# stop the server is 'cs2-server @instance stop'.
+				if Core.Wrapper::isUpdating; then
 					STATE="UPDATING"
 				else
-					STATE="STOPPED"
+					log <<< "Relaunching server (exit was not requested via 'cs2-server stop') ..."
+					STATE="LAUNCHING"
 				fi
 			fi
 
