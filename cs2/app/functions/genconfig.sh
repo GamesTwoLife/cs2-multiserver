@@ -124,6 +124,13 @@ App::generateServerConfig () {
 
 	(	disclaimer
 		cat <<-EOF
+			// Without a mapgroup, the engine has no rotation to fall back to once a
+			// match ends - explicitly pin the next map to the one we're already on,
+			// and skip the map vote, so the server restarts on the same map instead
+			// of getting stuck with no map loaded.
+			nextlevel "$MAP"
+			mp_endmatch_votenextmap 0
+
 			writeid // Update banned_user.cfg
 			// You could add 'writeip' here, but banning ips is generally
 			// not effective, with most people having dynamic ip addressesf
